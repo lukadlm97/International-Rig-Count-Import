@@ -3,7 +3,7 @@ using Homework.Enverus.InternationalRigCountImport.Core.Models.DTOs;
 
 namespace Homework.Enverus.InternationalRigCountImport.Core.Fetchers.Contracts
 {
-    public interface IWebPageProcessor
+    public interface IFileProvider
     {
         Task<OperationResult<RawFile>> 
             GetInternationalRigCount(CancellationToken cancellationToken);

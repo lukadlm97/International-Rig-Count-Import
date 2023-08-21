@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Homework.Enverus.InternationalRigCountImport.Console": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Staging"
+      }
+    }
+  }
+}

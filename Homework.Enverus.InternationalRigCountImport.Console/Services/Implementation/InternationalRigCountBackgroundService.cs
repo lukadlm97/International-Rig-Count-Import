@@ -1,23 +1,27 @@
-﻿using Homework.Enverus.InternationalRigCountImport.Core.Fetchers.Contracts;
+﻿using Homework.Enverus.InternationalRigCountImport.Core.Extensions;
+using Homework.Enverus.InternationalRigCountImport.Core.Fetchers.Contracts;
 using Homework.Enverus.InternationalRigCountImport.Core.Models.Enums;
+using Homework.Enverus.InternationalRigCountImport.Core.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
+using Homework.Enverus.InternationalRigCountImport.Core.Services;
 
 namespace Homework.Enverus.InternationalRigCountImport.Console.Services.Implementation
 {
     public class InternationalRigCountBackgroundService : BackgroundService
     {
+        public IServiceProvider _services { get; }
         private readonly ILogger<InternationalRigCountBackgroundService> _logger;
 
         public InternationalRigCountBackgroundService(IServiceProvider services,
             ILogger<InternationalRigCountBackgroundService> logger)
         {
-            Services = services;
+            _services = services;
             _logger = logger;
         }
 
-        public IServiceProvider Services { get; }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -30,13 +34,19 @@ namespace Homework.Enverus.InternationalRigCountImport.Console.Services.Implemen
         {
             _logger.LogInformation("International Rig Count Hosted Service is working.");
 
-            using (var scope = Services.CreateScope())
+            using (var scope = _services.CreateScope())
             {
-                var scopedProcessingService =
+                var scopedFileProvider =
                     scope.ServiceProvider
-                        .GetRequiredService<IWebPageProcessor>();
+                        .GetRequiredService<IFileProvider>();
+                var scopedExcelFileRepository =
+                    scope.ServiceProvider
+                        .GetRequiredService<IExcelFileRepository>();
+                var scopedRigCountExporter =
+                    scope.ServiceProvider
+                        .GetRequiredService<IRigCountExporter>();
 
-                var result = await scopedProcessingService.GetInternationalRigCount(stoppingToken);
+                var result = await scopedFileProvider.GetInternationalRigCount(stoppingToken);
 
                 switch (result.Status)
                 {
@@ -45,7 +55,40 @@ namespace Homework.Enverus.InternationalRigCountImport.Console.Services.Implemen
                         {
                             _logger.LogInformation("Successfully downloaded!!!");
                         }
-                        await SaveFile(result.Result.FileBytes);
+
+                        var now = DateTime.UtcNow;
+                        var dateDir = now.ToString(ExcelFileConstants.ExcelFileDirectoryDateFormat, CultureInfo.InvariantCulture);
+                        var timeDir = now.ToString(ExcelFileConstants.ExcelFileDirectoryTimeFormat, CultureInfo.InvariantCulture);
+                        if (!await scopedExcelFileRepository.SaveFile(result.Result.FileBytes,
+                                dateDir,
+                                timeDir, 
+                                cancellationToken: stoppingToken))
+                        {
+                            if (_logger.IsEnabled(LogLevel.Error))
+                            {
+                                _logger.LogError("Problems occurred on excel file materialization!!!");
+                                return;
+                            }
+                        }
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            _logger.LogInformation("Excel file successfully saved at root location");
+                        }
+
+                        var stats = await scopedExcelFileRepository.LoadFile(dateDir, timeDir, stoppingToken);
+
+                        if (!await scopedRigCountExporter.Write(stats, stoppingToken))
+                        {
+                            if (_logger.IsEnabled(LogLevel.Error))
+                            {
+                                _logger.LogError("Problems occurred on csv file creation!!!");
+                                return;
+                            }
+                        }
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            _logger.LogInformation("CSV file successfully saved at export location");
+                        }
                         break;
                     case OperationStatus.BadRequest:
                     case OperationStatus.NotFound:
@@ -63,7 +106,6 @@ namespace Homework.Enverus.InternationalRigCountImport.Console.Services.Implemen
                         }
 
                         break;
-
                 }
             }
         }
