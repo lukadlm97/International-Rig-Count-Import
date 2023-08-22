@@ -6,6 +6,6 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Fetchers.Contracts
     public interface IFileProvider
     {
         Task<OperationResult<RawFile>> 
-            GetInternationalRigCount(CancellationToken cancellationToken);
+            GetInternationalRigCount(string? dynamicUrl=default, CancellationToken cancellationToken=default);
     }
 }

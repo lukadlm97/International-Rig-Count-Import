@@ -3,7 +3,7 @@
     "Homework.Enverus.InternationalRigCountImport.Console": {
       "commandName": "Project",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Staging"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }
