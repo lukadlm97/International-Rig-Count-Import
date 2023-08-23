@@ -25,4 +25,19 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Models.DTOs
         }
 
     }
+
+    public record OperationResult
+    {
+        public OperationStatus Status { get; set; }
+        public string Description { get; set; }
+        public OperationResult(OperationStatus status)
+        {
+            Status = status;
+        }
+        public OperationResult(OperationStatus status, string description)
+        {
+            Status = status;
+            Description = description;
+        }
+    }
 }

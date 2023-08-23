@@ -1,48 +1,57 @@
-﻿using System.Text;
-using Homework.Enverus.InternationalRigCountImport.Core.Configurations;
-using Homework.Enverus.InternationalRigCountImport.Core.Exceptions;
-using Homework.Enverus.InternationalRigCountImport.Core.Repositories.Contracts;
+﻿using Homework.Enverus.InternationalRigCountImport.Core.Configurations;
 using Homework.Enverus.InternationalRigCountImport.Core.Services.Contracts;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Homework.Enverus.InternationalRigCountImport.Core.Services
+namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementations
 {
-    public class RigCountExporter:IRigCountExporter
+    public class RigCountExporter : IRigCountExporter
     {
-        private readonly Exporter _exporterSettings;
-        private readonly ICsvRepository _csvRepository;
+        private readonly ILogger<RigCountExporter> _logger;
         private readonly AdvancedSettings _advancedSettings;
+        private readonly IExcelService _excelService;
+        private readonly ICsvService _csvService;
 
-        public RigCountExporter(IOptions<Exporter> options, ICsvRepository csvRepository, IOptions<AdvancedSettings> advancedOptions)
+        public RigCountExporter(ILogger<RigCountExporter> logger, 
+            IExcelService excelService, 
+            ICsvService csvService, 
+            IOptions<AdvancedSettings> advancedOptions)
         {
-            _exporterSettings = options.Value;
-            _csvRepository = csvRepository;
+            _logger = logger;
+            _excelService = excelService;
+            _csvService = csvService;
             _advancedSettings = advancedOptions.Value;
         }
-        public async Task<bool> Write(IEnumerable<IEnumerable<string>> stats, CancellationToken cancellationToken = default)
+        public async Task<bool> Export(int? year = null, 
+            int? rowPerYear = null,
+            string? delimiter = null, 
+            string? dateDir = null, 
+            string? timeDir = null, 
+            CancellationToken cancellationToken = default)
         {
-            var rowCount = _exporterSettings.DataSourceSettings.ExcelWorkbookSettings.Years *
-                           _exporterSettings.DataSourceSettings.ExcelWorkbookSettings.RowsPerYear;
-
-            if (stats.Count() < rowCount)
-            {
-                throw new MissingRowsForFullExportException();
-            }
-
-            var selectedStats = stats.Take(rowCount);
-
-            StringBuilder sb = new StringBuilder();
-
-            foreach (var row in selectedStats)
-            {
-                sb.AppendLine(string.Join(_exporterSettings?.ExportDestinationSettings?.CsvSettings?.Delimiter, row));
-            }
-
             if (_advancedSettings.Enabled)
             {
-                return await _csvRepository.SaveFile(sb.ToString(), _exporterSettings.ExportDestinationSettings.CsvSettings.FileName, true, _advancedSettings.CsvExportLocation, cancellationToken);
+                if (dateDir == null || timeDir == null)
+                {
+                    throw new ArgumentNullException(dateDir == null ? nameof(dateDir) : nameof(timeDir));
+                }
             }
-            return await _csvRepository.SaveFile(sb.ToString(), _exporterSettings.ExportDestinationSettings.CsvSettings.FileName, false, string.Empty, cancellationToken);
+
+            try
+            {
+                var stats = 
+                    _excelService.LoadFile(_advancedSettings.Enabled, dateDir, timeDir);
+
+                return await _csvService.SaveFile(stats, year, rowPerYear, delimiter, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                if (_logger.IsEnabled(LogLevel.Error))
+                {
+                    _logger.LogError("Problem on create export ",ex);
+                }
+            }
+            return false;
         }
     }
 }

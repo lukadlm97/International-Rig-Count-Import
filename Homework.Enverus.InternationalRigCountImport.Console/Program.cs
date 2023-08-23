@@ -5,7 +5,8 @@ using Homework.Enverus.InternationalRigCountImport.Core.Fetchers.Contracts;
 using Homework.Enverus.InternationalRigCountImport.Core.Fetchers.Implementations;
 using Homework.Enverus.InternationalRigCountImport.Core.Repositories.Contracts;
 using Homework.Enverus.InternationalRigCountImport.Core.Repositories.Implementations;
-using Homework.Enverus.InternationalRigCountImport.Core.Services;
+using Homework.Enverus.InternationalRigCountImport.Core.Services.Contracts;
+using Homework.Enverus.InternationalRigCountImport.Core.Services.Implementations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,9 +30,11 @@ builder.Services.ConfigureAdvancedFileProvider(builder.Configuration, environmen
 
 builder.Services.AddSingleton<IFilePathProvider, BakerHughesFilePathProvider>();
 builder.Services.AddSingleton<IFileProvider, BakerHughesFileProvider>();
-builder.Services.AddSingleton<IExcelFileRepository, ExcelFileRepository>();
-builder.Services.AddSingleton<ICsvRepository, CsvRepository>();
 builder.Services.AddSingleton<IRigCountExporter, RigCountExporter>();
+builder.Services.AddSingleton<IRigCountImporter, RigCountImporter>();
+builder.Services.AddSingleton<IExcelService, ExcelService>();
+builder.Services.AddSingleton<ICsvService, CsvService>();
+builder.Services.AddSingleton<IFileRepository, FileRepository>();
 builder.Services.AddSingleton<InternationalRigCountBackgroundService>();
 builder.Services.AddHostedService<InternationalRigCountBackgroundService>();
 
