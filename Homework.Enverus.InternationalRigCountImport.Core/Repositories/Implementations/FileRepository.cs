@@ -1,13 +1,14 @@
 ﻿using Homework.Enverus.InternationalRigCountImport.Core.Repositories.Contracts;
+using Homework.Enverus.Shared.Logging.Contracts;
 using Microsoft.Extensions.Logging;
 
 namespace Homework.Enverus.InternationalRigCountImport.Core.Repositories.Implementations
 {
     public class FileRepository:IFileRepository
     {
-        private readonly ILogger<FileRepository> _logger;
+        private readonly IHighPerformanceLogger _logger;
 
-        public FileRepository(ILogger<FileRepository> logger)
+        public FileRepository(IHighPerformanceLogger logger)
         {
             _logger = logger;
         }
@@ -25,10 +26,7 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Repositories.Impleme
             }
             catch (Exception ex)
             {
-                if (_logger.IsEnabled(LogLevel.Error))
-                {
-                    _logger.LogError("Error occurred at materialization of file", ex);
-                }
+                _logger.Log("Error occurred at materialization of file...", ex, LogLevel.Error);
 
                 return false;
             }
@@ -48,10 +46,7 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Repositories.Impleme
             }
             catch (Exception ex)
             {
-                if (_logger.IsEnabled(LogLevel.Error))
-                {
-                    _logger.LogError("Error occurred at materialization of file", ex);
-                }
+                _logger.Log("Error occurred at materialization of file...", ex, LogLevel.Error);
 
                 return false;
             }

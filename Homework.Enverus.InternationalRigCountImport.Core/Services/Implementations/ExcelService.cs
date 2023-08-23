@@ -2,21 +2,21 @@
 using Homework.Enverus.InternationalRigCountImport.Core.Configurations;
 using Homework.Enverus.InternationalRigCountImport.Core.Extensions;
 using Homework.Enverus.InternationalRigCountImport.Core.Repositories.Contracts;
-using Homework.Enverus.InternationalRigCountImport.Core.Repositories.Implementations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Homework.Enverus.InternationalRigCountImport.Core.Services.Contracts;
+using Homework.Enverus.Shared.Logging.Contracts;
 
 namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementations
 {
     public class ExcelService : IExcelService
     {
-        private readonly ILogger<ExcelService> _logger;
+        private readonly IHighPerformanceLogger _logger;
         private readonly Exporter _exporter;
         private readonly ExcelDirectorySettings _excelDirectorySettings;
         private readonly IFileRepository _fileRepository;
 
-        public ExcelService(ILogger<ExcelService> logger,
+        public ExcelService(IHighPerformanceLogger logger,
             IOptions<Exporter> exporterOptions,
             IOptions<ExcelDirectorySettings> excelDirectoryOptions,
             IFileRepository fileRepository)
@@ -63,10 +63,7 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementat
             }
             catch (Exception ex)
             {
-                if (_logger.IsEnabled(LogLevel.Error))
-                {
-                    _logger.LogError("Error occurred at materialization of excel file at file system", ex);
-                }
+                _logger.Log("Error occurred at materialization of excel file at file system", ex, LogLevel.Error);
 
                 return false;
             }
@@ -131,10 +128,7 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementat
             }
             catch (Exception ex)
             {
-                if (_logger.IsEnabled(LogLevel.Error))
-                {
-                    _logger.LogError("Error occurred at loading or manipulating excel file from file system", ex);
-                }
+                _logger.Log("Error occurred at loading/manipulating excel file from file system", ex, LogLevel.Error);
             }
 
             return stats;

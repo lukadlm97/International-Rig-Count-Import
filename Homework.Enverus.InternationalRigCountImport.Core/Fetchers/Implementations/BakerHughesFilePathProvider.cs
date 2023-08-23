@@ -3,8 +3,8 @@ using AngleSharp.Dom;
 using AngleSharp.Io;
 using Homework.Enverus.InternationalRigCountImport.Core.Configurations;
 using Homework.Enverus.InternationalRigCountImport.Core.Exceptions;
-using Homework.Enverus.InternationalRigCountImport.Core.Extensions;
 using Homework.Enverus.InternationalRigCountImport.Core.Fetchers.Contracts;
+using Homework.Enverus.Shared.Logging.Contracts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -12,21 +12,17 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Fetchers.Implementat
 {
     public class BakerHughesFilePathProvider : IFilePathProvider
     {
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ExternalDataSources _externalDataSource;
-        private readonly ILogger<BakerHughesFileProvider> _logger;
+        private readonly IHighPerformanceLogger _logger;
 
-        public BakerHughesFilePathProvider(IHttpClientFactory httpClientFactory,
-            IOptions<ExternalDataSources> options,
-            ILogger<BakerHughesFileProvider> logger)
+        public BakerHughesFilePathProvider(IOptions<ExternalDataSources> options,
+                                            IHighPerformanceLogger logger)
         {
-            _httpClientFactory = httpClientFactory;
             _externalDataSource = options.Value;
             _logger = logger;
         }
         public async Task<string?> GetFilePath(CancellationToken cancellationToken)
         {
-           
             try
             {
                 var exactUrl = string
@@ -59,14 +55,9 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Fetchers.Implementat
             }
             catch (Exception ex)
             {
-                if (_logger.IsEnabled(LogLevel.Error))
-                {
-                    _logger.LogError("Error occurred at downloading file from URL", ex);
-                }
+                _logger.Log("Error occurred on try to determinate source file URL on website...", ex, LogLevel.Error);
                 return string.Empty;
             }
-
-            return string.Empty;
         }
     }
 }

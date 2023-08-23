@@ -8,17 +8,6 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Extensions
 {
     public static class FileProvider
     {
-        /*
-        public static IServiceCollection ConfigureFileProvider(this IServiceCollection services, 
-            IConfiguration configuration, 
-            string hostEnvironment)
-        {
-           
-
-            return services;
-        }
-        */
-
         public static IServiceCollection ConfigureAdvancedFileProvider(this IServiceCollection services,
             IConfiguration configuration,
             string hostEnvironment)

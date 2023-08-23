@@ -6,19 +6,20 @@ using Microsoft.Extensions.Logging;
 using Homework.Enverus.InternationalRigCountImport.Core.Configurations;
 using Homework.Enverus.InternationalRigCountImport.Core.Extensions;
 using Homework.Enverus.InternationalRigCountImport.Core.Models.Enums;
+using Homework.Enverus.Shared.Logging.Contracts;
 using Microsoft.Extensions.Options;
 
 namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementations
 {
     public class RigCountImporter : IRigCountImporter
     {
-        private readonly ILogger<RigCountImporter> _logger;
+        private readonly IHighPerformanceLogger _logger;
         private readonly IFilePathProvider _filePathProvider;
         private readonly IFileProvider _fileProvider;
         private readonly IExcelService _excelService;
         private readonly AdvancedSettings _advancedSettings;
 
-        public RigCountImporter(ILogger<RigCountImporter> logger,
+        public RigCountImporter(IHighPerformanceLogger logger,
             IOptions<AdvancedSettings> advancedOptions,
             IFilePathProvider filePathProvider,
             IFileProvider fileProvider,
@@ -35,78 +36,61 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementat
             bool? useArchive = false,
             CancellationToken cancellationToken = default)
         {
-            var path = await _filePathProvider.GetFilePath(cancellationToken);
-            if (string.IsNullOrWhiteSpace(path))
+            try
             {
-                if (_logger.IsEnabled(LogLevel.Warning))
+                var path = await _filePathProvider.GetFilePath(cancellationToken);
+                if (string.IsNullOrWhiteSpace(path))
                 {
-                    _logger.LogWarning("unable to determinate URL for excel fetching by index page");
+                    _logger.Log("Unable to determinate URL for excel fetching by index page...", LogLevel.Warning);
                 }
-            }
 
-            var result = await _fileProvider.GetInternationalRigCount(path, cancellationToken);
-            switch (result.Status)
-            {
-                case OperationStatus.Ok:
-                    if (_logger.IsEnabled(LogLevel.Information))
-                    {
-                        _logger.LogInformation("Successfully downloaded!!!");
-                    }
+                var result = await _fileProvider.GetInternationalRigCount(path, cancellationToken);
+                switch (result.Status)
+                {
+                    case OperationStatus.Ok:
+                        _logger.Log("File are successfully downloaded from remote URL...", LogLevel.Information);
 
-                    string? dateDir = null;
-                    string? timeDir = null;
-                    advancedHandling ??= _advancedSettings.Enabled;
-                    useArchive ??= _advancedSettings.ArchiveOldSamples;
-                    if ((bool)advancedHandling && (bool)useArchive)
-                    {
-                        DateTime now = DateTime.UtcNow;
-                        dateDir = now.ToString(ExcelFileConstants.ExcelFileDirectoryDateFormat);
-                        timeDir = now.ToString(ExcelFileConstants.ExcelFileDirectoryTimeFormat);
-                    }
-
-                    if (!await _excelService.SaveFile(result.Result.FileBytes,
-                            advancedHandling, useArchive, dateDir,
-                            timeDir, cancellationToken))
-                    {
-                        if (_logger.IsEnabled(LogLevel.Error))
+                        string? dateDir = null;
+                        string? timeDir = null;
+                        advancedHandling ??= _advancedSettings.Enabled;
+                        useArchive ??= _advancedSettings.ArchiveOldSamples;
+                        if ((bool)advancedHandling && (bool)useArchive)
                         {
-                            _logger.LogError("Problems occurred on excel file materialization!!!");
+                            DateTime now = DateTime.UtcNow;
+                            dateDir = now.ToString(ExcelFileConstants.ExcelFileDirectoryDateFormat);
+                            timeDir = now.ToString(ExcelFileConstants.ExcelFileDirectoryTimeFormat);
+                        }
+
+                        if (!await _excelService.SaveFile(result.Result.FileBytes,
+                                advancedHandling, useArchive, dateDir,
+                                timeDir, cancellationToken))
+                        {
+                            _logger.Log("Problems occurred on excel file materialization...", LogLevel.Error);
                             return new OperationResult<FileDirectory>(OperationStatus.UnavailableAction);
                         }
-                    }
 
-                    if (_logger.IsEnabled(LogLevel.Information))
-                    {
-                        _logger.LogInformation("Excel file successfully saved at root location");
-                    }
+                        _logger.Log("Excel file successfully saved at configured location...", LogLevel.Information);
+                        return new OperationResult<FileDirectory>(OperationStatus.Ok, new FileDirectory(dateDir, timeDir));
+                    case OperationStatus.BadRequest:
+                    case OperationStatus.NotFound:
+                    case OperationStatus.UnavailableAction:
+                    case OperationStatus.Unknown:
 
-                    return new OperationResult<FileDirectory>(OperationStatus.Ok, new FileDirectory(dateDir, timeDir));
-                    break;
-                case OperationStatus.BadRequest:
-                case OperationStatus.NotFound:
-                case OperationStatus.UnavailableAction:
-                case OperationStatus.Unknown:
-                    if (_logger.IsEnabled(LogLevel.Error))
-                    {
-                        _logger.LogError("Operation completed with status error: " + result.Description);
-                    }
+                        _logger.Log(string.Format("Operation completed with status error: {0}...", result.Description), LogLevel.Error);
+                        return new OperationResult<FileDirectory>(OperationStatus.BadRequest);
+                    default:
 
-                    return new OperationResult<FileDirectory>(OperationStatus.BadRequest);
-                    break;
-                default:
-                    if (_logger.IsEnabled(LogLevel.Warning))
-                    {
-                        _logger.LogError("Didn't have covered this case at code");
-                    }
-
-                    return new OperationResult<FileDirectory>(OperationStatus.Unknown);
-                    break;
+                        _logger.Log("Didn't have covered this case at code", LogLevel.Error);
+                        return new OperationResult<FileDirectory>(OperationStatus.Unknown);
+                }
             }
-        }
+            catch (Exception ex)
+            {
 
-        public Task<OperationResult<FileDirectory>> Import(CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
+                _logger.Log("Error occurred on import data from data source...", ex, LogLevel.Error);
+            }
+
+            return new OperationResult<FileDirectory>(OperationStatus.BadRequest);
         }
     }
 }

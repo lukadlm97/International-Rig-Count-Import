@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Homework.Enverus.InternationalRigCountImport.Core.Models;
+using Homework.Enverus.InternationalRigCountImport.Core.Models.DTOs;
 
 namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Contracts
 {
     public interface IRigCountExporter
     {
-        Task<bool> Export(int? year,
+        Task<OperationResult<ExportFileDirectory>> Export(int? year,
             int? rowPerYear,
             string? delimiter = null,
             string? dateDir = null,

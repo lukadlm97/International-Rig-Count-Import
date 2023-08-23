@@ -8,6 +8,8 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Contracts
             int? years = null,
             int? rowsPerYear = null,
             string? delimiter = null,
+            bool? advancedHandling = null,
+            string? csvLocation = null,
             CancellationToken cancellationToken = default);
     }
 }

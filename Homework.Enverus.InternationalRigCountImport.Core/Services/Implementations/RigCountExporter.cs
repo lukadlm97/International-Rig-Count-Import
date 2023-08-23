@@ -1,5 +1,9 @@
 ﻿using Homework.Enverus.InternationalRigCountImport.Core.Configurations;
+using Homework.Enverus.InternationalRigCountImport.Core.Models.DTOs;
+using Homework.Enverus.InternationalRigCountImport.Core.Models;
+using Homework.Enverus.InternationalRigCountImport.Core.Models.Enums;
 using Homework.Enverus.InternationalRigCountImport.Core.Services.Contracts;
+using Homework.Enverus.Shared.Logging.Contracts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -7,12 +11,12 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementat
 {
     public class RigCountExporter : IRigCountExporter
     {
-        private readonly ILogger<RigCountExporter> _logger;
+        private readonly IHighPerformanceLogger _logger;
         private readonly AdvancedSettings _advancedSettings;
         private readonly IExcelService _excelService;
         private readonly ICsvService _csvService;
 
-        public RigCountExporter(ILogger<RigCountExporter> logger, 
+        public RigCountExporter(IHighPerformanceLogger logger, 
             IExcelService excelService, 
             ICsvService csvService, 
             IOptions<AdvancedSettings> advancedOptions)
@@ -22,18 +26,21 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementat
             _csvService = csvService;
             _advancedSettings = advancedOptions.Value;
         }
-        public async Task<bool> Export(int? year = null, 
-            int? rowPerYear = null,
-            string? delimiter = null, 
-            string? dateDir = null, 
-            string? timeDir = null, 
+        public async Task<OperationResult<ExportFileDirectory>> Export(int? year,
+            int? rowPerYear,
+            string? delimiter = null,
+            string? dateDir = null,
+            string? timeDir = null,
             CancellationToken cancellationToken = default)
         {
-            if (_advancedSettings.Enabled)
+            string? csvDestination = _advancedSettings.CsvExportLocation;
+            if (_advancedSettings.Enabled && _advancedSettings.ArchiveOldSamples)
             {
-                if (dateDir == null || timeDir == null)
+                if (dateDir == null || timeDir == null || string.IsNullOrWhiteSpace(csvDestination))
                 {
-                    throw new ArgumentNullException(dateDir == null ? nameof(dateDir) : nameof(timeDir));
+                    throw new ArgumentNullException(dateDir == null ? nameof(dateDir) : 
+                                                    timeDir== null ? nameof(timeDir) : 
+                                                    csvDestination);
                 }
             }
 
@@ -42,16 +49,23 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementat
                 var stats = 
                     _excelService.LoadFile(_advancedSettings.Enabled, dateDir, timeDir);
 
-                return await _csvService.SaveFile(stats, year, rowPerYear, delimiter, cancellationToken);
+                if (stats == null || !stats.Any())
+                {
+                    _logger.Log("Stats for export doesn\'t found", LogLevel.Error);
+                    return new OperationResult<ExportFileDirectory>(OperationStatus.NotFound);
+                }
+
+                if (await _csvService.SaveFile(stats, year, rowPerYear, delimiter,
+                        _advancedSettings.Enabled, csvDestination, cancellationToken))
+                {
+                    return new OperationResult<ExportFileDirectory>(OperationStatus.Ok, csvDestination);
+                }
             }
             catch (Exception ex)
             {
-                if (_logger.IsEnabled(LogLevel.Error))
-                {
-                    _logger.LogError("Problem on create export ",ex);
-                }
+                _logger.Log("Problems occurred at export creation", ex, LogLevel.Error);
             }
-            return false;
+            return new OperationResult<ExportFileDirectory>(OperationStatus.BadRequest);
         }
     }
 }

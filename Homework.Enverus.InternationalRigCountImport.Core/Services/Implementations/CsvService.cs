@@ -3,33 +3,30 @@ using Homework.Enverus.InternationalRigCountImport.Core.Configurations;
 using Homework.Enverus.InternationalRigCountImport.Core.Exceptions;
 using Homework.Enverus.InternationalRigCountImport.Core.Repositories.Contracts;
 using Homework.Enverus.InternationalRigCountImport.Core.Services.Contracts;
-using Microsoft.Extensions.Logging;
+using Homework.Enverus.Shared.Logging.Contracts;
 using Microsoft.Extensions.Options;
 
 namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementations
 {
     public class CsvService : ICsvService
     {
-        private readonly ILogger<CsvService> _logger;
         private readonly IFileRepository _fileRepository;
         private readonly Exporter _exporterSettings;
-        private readonly AdvancedSettings _advancedSettings;
 
-        public CsvService(ILogger<CsvService> logger, 
+        public CsvService(IHighPerformanceLogger logger, 
             IFileRepository fileRepository,
-            IOptions<Exporter> exporterOptions, 
-            IOptions<AdvancedSettings> advancedOptions)
+            IOptions<Exporter> exporterOptions)
         {
-            _logger = logger;
             _fileRepository = fileRepository;
             _exporterSettings = exporterOptions.Value;
-            _advancedSettings = advancedOptions.Value;
         }
         
         public async Task<bool> SaveFile(IReadOnlyList<IReadOnlyList<string>> rigRows,
             int? years = null,
             int? rowsPerYear = null,
             string? delimiter = null,
+            bool? advancedHandling = null,
+            string? csvLocation = null,
             CancellationToken cancellationToken = default)
         {
             years ??= _exporterSettings?.DataSourceSettings?.ExcelWorkbookSettings?.Years;
@@ -73,12 +70,15 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementat
             {
                 throw new ArgumentNullException(nameof(fullPath));
             }
-            if (_advancedSettings.Enabled)
+            if (advancedHandling ?? false)
             {
-                fullPath = Path.Combine(_advancedSettings.CsvExportLocation, fullPath);
+                if (string.IsNullOrWhiteSpace(csvLocation))
+                {
+                    throw new ArgumentNullException(nameof(csvLocation));
+                }
+                fullPath = Path.Combine(csvLocation, fullPath);
             }
-
-
+            
             return await _fileRepository.SaveFile(fullPath, sb.ToString(), cancellationToken);
         }
     }

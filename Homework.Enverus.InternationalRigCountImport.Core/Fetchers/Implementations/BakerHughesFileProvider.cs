@@ -5,6 +5,7 @@ using Homework.Enverus.InternationalRigCountImport.Core.Fetchers.Contracts;
 using Homework.Enverus.InternationalRigCountImport.Core.Models;
 using Homework.Enverus.InternationalRigCountImport.Core.Models.DTOs;
 using Homework.Enverus.InternationalRigCountImport.Core.Models.Enums;
+using Homework.Enverus.Shared.Logging.Contracts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -14,20 +15,20 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Fetchers.Implementat
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ExternalDataSources _externalDataSource;
-        private readonly ILogger<BakerHughesFileProvider> _logger;
+        private readonly IHighPerformanceLogger _logger;
 
         public BakerHughesFileProvider(IHttpClientFactory httpClientFactory,
             IOptions<ExternalDataSources> options, 
-            ILogger<BakerHughesFileProvider> logger)
+            IHighPerformanceLogger logger)
         {
             _httpClientFactory = httpClientFactory;
             _externalDataSource = options.Value;
             _logger = logger;
         }
         public async Task<OperationResult<RawFile>> 
-            GetInternationalRigCount(string? dynamicUrl = default, CancellationToken cancellationToken = default)
+            GetInternationalRigCount(string? dynamicUrl = null, CancellationToken cancellationToken = default)
         {
-            if (dynamicUrl == default)
+            if (string.IsNullOrWhiteSpace(dynamicUrl))
             {
                 var staticFileUrl = _externalDataSource.StaticFileUrl;
                 if (staticFileUrl == null || string.IsNullOrWhiteSpace(staticFileUrl))
@@ -51,10 +52,7 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Fetchers.Implementat
             }
             catch (Exception ex)
             {
-                if (_logger.IsEnabled(LogLevel.Error))
-                {
-                    _logger.LogError("Error occurred at downloading file from URL", ex);
-                }
+                _logger.Log("Error occurred at downloading file from URL...", ex, LogLevel.Error);
                 return new OperationResult<RawFile>(OperationStatus.Unknown, ex.Message);
             }
 
