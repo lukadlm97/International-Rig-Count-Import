@@ -88,7 +88,7 @@ If "Enabled" is set to true, import/export will use "OriginalExcelLocation" and 
     1. [AngleSharp GitHub Repository](https://github.com/AngleSharp/AngleSharp)
   - ClosedXML:
     1. [ClosedXML GitHub Repository](https://github.com/ClosedXML/ClosedXML)
-    2. ClosedXML allows Excel file creation without the Excel application.
+    * ClosedXML allows Excel file creation without the Excel application.
   - NLog:
     1. [NLog Official Website](https://nlog-project.org/)
   - ConsoleAppFramework:
