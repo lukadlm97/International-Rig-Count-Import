@@ -97,5 +97,9 @@ If "Enabled" is set to true, import/export will use "OriginalExcelLocation" and 
 ### Note
 The UserAgent "PostmanRuntime/7.32.3" is used for retrieving content from the base URL, as it has consistently provided stable results for me.
 
+At the zip file in this GitHub repository, you can find executables for both types of apps. You can modify the app settings and try all the features that the project provides.
+
+As you are aware, to run the app, you need to extract the archive and navigate to the directory containing the .exe file. Then, using the command prompt, execute 'Homework.Enverus.InternationalRigCountImport.CAF.exe importRigCount' (for the CAF app) or 'Homework.Enverus.InternationalRigCountImport.Console.exe' (for the background hosted service) to fetch your data.
+
 
 
