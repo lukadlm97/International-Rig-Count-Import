@@ -1,46 +1,42 @@
-﻿using Homework.Enverus.InternationalRigCountImport.Core.Models.Enums;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+﻿using Homework.Enverus.InternationalRigCountImport.CAF.Scripts.Contracts;
+using Homework.Enverus.InternationalRigCountImport.Core.Models.Enums;
 using Homework.Enverus.InternationalRigCountImport.Core.Services.Contracts;
 using Homework.Enverus.Shared.Logging.Contracts;
+using Microsoft.Extensions.Logging;
 
-namespace Homework.Enverus.InternationalRigCountImport.Console.Services.Implementation
+namespace Homework.Enverus.InternationalRigCountImport.CAF.Scripts.Implementations
 {
-    public class InternationalRigCountBackgroundService : BackgroundService
+    public class Script : ConsoleAppBase, IScript
     {
+        private readonly IRigCountImporter _imported;
+        private readonly IRigCountExporter _exporter;
         private readonly IHighPerformanceLogger _logger;
-        private readonly IRigCountExporter _rigCountExporter;
-        private readonly IRigCountImporter _rigCountImporter;
 
-        public InternationalRigCountBackgroundService(IHighPerformanceLogger logger,
-            IRigCountImporter rigCountImporter,
-            IRigCountExporter rigCountExporter)
+        public Script(IHighPerformanceLogger logger, IRigCountImporter importer, IRigCountExporter exporter)
         {
             _logger = logger;
-            _rigCountImporter = rigCountImporter;
-            _rigCountExporter = rigCountExporter;
+            _imported = importer;
+            _exporter = exporter;
         }
+        
+        [Command("importRigCount", "Command that perform fetching of rig count from predefined URL (from appsettings.json) and export that information to output.csv file by sent parameters.")]
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            await DoWork(stoppingToken);
-        }
-
-        private async Task DoWork(CancellationToken stoppingToken)
+        public async Task Import(bool? advancedHandling = null, bool? useArchive = null, int? year = null, int? rowPerYear = null,
+            string? delimiter = null, CancellationToken cancellationToken = default)
         {
             _logger.Log("International Rig count service has started...", LogLevel.Information);
 
-            var importResult = await _rigCountImporter.Import(null, null, stoppingToken);
+            var importResult = await _imported.Import(advancedHandling, useArchive, cancellationToken);
             switch (importResult.Status)
             {
                 case OperationStatus.Ok:
                     _logger.Log("Import content successfully fetched from data source...", LogLevel.Information);
 
-                    var exportResult = await _rigCountExporter.Export(null, null, null,
-                        importResult.Result.DateDir, importResult.Result.TimeDir, stoppingToken);
+                    var exportResult = await _exporter.Export(year, rowPerYear, delimiter,
+                        importResult.Result.DateDir, importResult.Result.TimeDir, cancellationToken);
                     switch (exportResult.Status)
                     {
-                        case OperationStatus.Ok: 
+                        case OperationStatus.Ok:
                             _logger.Log("Export successfully created at file system...", LogLevel.Information);
                             break;
                         case OperationStatus.NotFound:

@@ -33,19 +33,20 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementat
             string? timeDir = null,
             CancellationToken cancellationToken = default)
         {
-            string? csvDestination = _advancedSettings.CsvExportLocation;
-            if (_advancedSettings.Enabled && _advancedSettings.ArchiveOldSamples)
-            {
-                if (dateDir == null || timeDir == null || string.IsNullOrWhiteSpace(csvDestination))
-                {
-                    throw new ArgumentNullException(dateDir == null ? nameof(dateDir) : 
-                                                    timeDir== null ? nameof(timeDir) : 
-                                                    csvDestination);
-                }
-            }
-
             try
             {
+                string? csvDestination = _advancedSettings.CsvExportLocation;
+                if (_advancedSettings.Enabled && _advancedSettings.ArchiveOldSamples)
+                {
+                    if (dateDir == null || timeDir == null || string.IsNullOrWhiteSpace(csvDestination))
+                    {
+                        throw new ArgumentNullException(dateDir == null ? nameof(dateDir) : 
+                                                        timeDir== null ? nameof(timeDir) : 
+                                                        csvDestination);
+                    }
+                }
+
+           
                 var stats = 
                     _excelService.LoadFile(_advancedSettings.Enabled, dateDir, timeDir);
 

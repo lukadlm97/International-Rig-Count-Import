@@ -11,11 +11,9 @@ namespace Homework.Enverus.Shared.Logging
         public static IServiceCollection ConfigureLoggingServices(this IServiceCollection services, ILoggingBuilder loggingBuilder)
         {
             loggingBuilder.ClearProviders();
-           // loggingBuilder.AddConsole();
             services.AddLogging(
                 builder =>
                 {
-                   // builder.AddConsole().SetMinimumLevel(LogLevel.Trace);
                     builder.SetMinimumLevel(LogLevel.Trace);
                     builder.AddNLog(new NLogProviderOptions { RemoveLoggerFactoryFilter = true });
                 });
@@ -23,5 +21,25 @@ namespace Homework.Enverus.Shared.Logging
             services.AddSingleton<IHighPerformanceLogger, HighPerformanceLogger>();
             return services;
         }
+
+        public static IServiceCollection ConfigureLoggingServices(this IServiceCollection services)
+        {
+            services.AddLogging(
+                builder =>
+                {
+                    builder.SetMinimumLevel(LogLevel.Trace);
+                    builder.AddNLog(new NLogProviderOptions { RemoveLoggerFactoryFilter = true });
+                });
+
+            services.AddSingleton<IHighPerformanceLogger, HighPerformanceLogger>();
+            return services;
+        }
+
+        public static ILoggingBuilder ConfigureLoggingBuilder(this ILoggingBuilder loggingBuilder)
+        {
+            loggingBuilder.ClearProviders();
+            return loggingBuilder;
+        }
+        
     }
 }

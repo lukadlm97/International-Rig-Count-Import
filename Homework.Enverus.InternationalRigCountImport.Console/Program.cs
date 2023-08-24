@@ -4,6 +4,7 @@ using Homework.Enverus.Shared.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args); 
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 builder.Configuration

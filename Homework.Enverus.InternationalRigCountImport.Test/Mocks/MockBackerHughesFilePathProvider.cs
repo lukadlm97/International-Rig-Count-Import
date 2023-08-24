@@ -15,6 +15,19 @@ namespace Homework.Enverus.InternationalRigCountImport.Test.Mocks
                 .ReturnsAsync("static-files/7240366e-61cc-4acb-89bf-86dc1a0dffe8");
 
 
+
+
+
+            return mockPathProvider;
+        }
+        public static Mock<IFilePathProvider> GetBackerHughesFilePathProviderWithoutPathMock()
+        {
+            var mockPathProvider = new Mock<IFilePathProvider>();
+
+            mockPathProvider.Setup(r =>
+                    r.GetFilePath(It.IsAny<CancellationToken>()))
+                .ReturnsAsync("");
+            
             return mockPathProvider;
         }
     }

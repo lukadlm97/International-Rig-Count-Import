@@ -32,9 +32,9 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementat
             years ??= _exporterSettings?.DataSourceSettings?.ExcelWorkbookSettings?.Years;
             rowsPerYear ??= _exporterSettings?.DataSourceSettings?.ExcelWorkbookSettings?.RowsPerYear;
             
-            if (years == null || rowsPerYear == null)
+            if (years == null || rowsPerYear == null || years <= 0 || rowsPerYear <= 0)
             {
-                throw new ArgumentNullException(years == null? nameof(years) : nameof(rowsPerYear));
+                throw new ArgumentException(years == null? nameof(years) : nameof(rowsPerYear));
             }
 
             var rowCount = (int) (years * rowsPerYear);
@@ -51,6 +51,12 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementat
                 }
                 delimiter = _exporterSettings?.ExportDestinationSettings?.CsvSettings?.Delimiter;
             }
+          
+            if (string.IsNullOrWhiteSpace(_exporterSettings?.ExportDestinationSettings?.CsvSettings?.Delimiter))
+            {
+                throw new ArgumentNullException(nameof(delimiter));
+            }
+            
 
             if (string.IsNullOrWhiteSpace(delimiter))
             {

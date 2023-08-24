@@ -7,9 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Homework.Enverus.Internatio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Homework.Enverus.InternationalRigCountImport.Core", "Homework.Enverus.InternationalRigCountImport.Core\Homework.Enverus.InternationalRigCountImport.Core.csproj", "{141A02BF-7284-43FD-98A8-8ECDFC5ED26A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Homework.Enverus.Shared.Logging", "Homework.Enverus.Shared.Logging\Homework.Enverus.Shared.Logging.csproj", "{57B18208-C686-4456-8B2C-75CBB29F3E25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Homework.Enverus.Shared.Logging", "Homework.Enverus.Shared.Logging\Homework.Enverus.Shared.Logging.csproj", "{57B18208-C686-4456-8B2C-75CBB29F3E25}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Homework.Enverus.InternationalRigCountImport.Test", "Homework.Enverus.InternationalRigCountImport.Test\Homework.Enverus.InternationalRigCountImport.Test.csproj", "{64909567-881E-43A1-BBA5-0797FFCDA245}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Homework.Enverus.InternationalRigCountImport.Test", "Homework.Enverus.InternationalRigCountImport.Test\Homework.Enverus.InternationalRigCountImport.Test.csproj", "{64909567-881E-43A1-BBA5-0797FFCDA245}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Homework.Enverus.InternationalRigCountImport.CAF", "Homework.Enverus.InternationalRigCountImport.CAF\Homework.Enverus.InternationalRigCountImport.CAF.csproj", "{96866E01-B5FE-4836-B3AB-529EC4FB9810}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{64909567-881E-43A1-BBA5-0797FFCDA245}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64909567-881E-43A1-BBA5-0797FFCDA245}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{64909567-881E-43A1-BBA5-0797FFCDA245}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96866E01-B5FE-4836-B3AB-529EC4FB9810}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96866E01-B5FE-4836-B3AB-529EC4FB9810}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96866E01-B5FE-4836-B3AB-529EC4FB9810}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96866E01-B5FE-4836-B3AB-529EC4FB9810}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

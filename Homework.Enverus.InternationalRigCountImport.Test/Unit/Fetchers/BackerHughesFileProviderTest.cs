@@ -40,7 +40,7 @@ namespace Homework.Enverus.InternationalRigCountImport.Test.Unit.Fetchers
         [Xunit.Theory]
         [InlineData("static-files/7240366e-61cc-4acb-89bf-86dc1a0dffe8", true)]
         [InlineData("qwertyui", false)]
-        public async Task GetFilePath_ExpectedFile(string staticFileUrl, bool isOk)
+        public async Task GetFilePath_WIthAndWithoutFile(string staticFileUrl, bool isOk)
         {
             var factory  = MockHttpClientFactory.GetHttpClientFactoryWithDataMock();
             var persistenceOptions = Options.Create(new ExternalDataSources()

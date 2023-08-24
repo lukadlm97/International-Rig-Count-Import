@@ -6,7 +6,7 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Contracts
     public interface IRigCountImporter
     {
         Task<OperationResult<FileDirectory>> Import(bool? advancedHandling = false,
-            bool? useArchive = false,
-            CancellationToken cancellationToken = default);
+                                                    bool? useArchive = false,
+                                                    CancellationToken cancellationToken = default);
     }
 }

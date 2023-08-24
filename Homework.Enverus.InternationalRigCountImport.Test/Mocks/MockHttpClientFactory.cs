@@ -61,7 +61,7 @@ namespace Homework.Enverus.InternationalRigCountImport.Test.Mocks
                 )
                 .ReturnsAsync(new HttpResponseMessage()
                 {
-                    Content = new ByteArrayContent(File.ReadAllBytes("c:\\Users\\luka.radovanovic\\Practice\\BakerHughesRigCount\\Worldwide Rig Counts - Current & Historical DataSource.xlsx")),
+                    Content = new ByteArrayContent(File.ReadAllBytes("Worldwide Rig Counts - Current & Historical DataSource.xlsx")),
                     StatusCode = HttpStatusCode.OK
                 })
                 .Verifiable();

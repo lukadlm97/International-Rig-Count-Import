@@ -33,6 +33,10 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementat
             string? timeDirectory = null,
             CancellationToken cancellationToken = default)
         {
+            if (file.IsNullOrEmpty())
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
             try
             {
                 var fullPath = ExcelFileConstants.ExcelFileName;
@@ -108,7 +112,15 @@ namespace Homework.Enverus.InternationalRigCountImport.Core.Services.Implementat
                     startRow == null || endRow == null ||
                     startColumn == null || endColumn == null)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentNullException(string.IsNullOrWhiteSpace(worksheet)? nameof(worksheet):
+                        "configured row or/and column position at excel file are wrong");
+                }
+
+                if (
+                    startRow <= 0 || endRow <= 0 ||
+                    startColumn <= 0 || endColumn <= 0)
+                {
+                    throw new ArgumentException("configured row or/and column position at excel file are lower then 1");
                 }
 
                 var wb = new XLWorkbook(fullPath);
